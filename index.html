@@ -307,12 +307,11 @@
       }
     })
     .then(response => {
-      alert('¡Reserva enviada con éxito!');
+      alert('¡Reserva realizada con éxito!');
       fecharFormulario();
     })
     .catch(error => {
-      alert('Error al enviar la reserva. Intenta nuevamente.');
-      console.error(error);
+      alert('Hubo un error al realizar la reserva. Intenta nuevamente.');
     });
   }
 </script>
