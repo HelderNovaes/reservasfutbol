@@ -77,6 +77,12 @@
       transform: scale(1.05);
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
     }
+    .campo h3 {
+      color: #fafafa; /* Altere esa color según sea necesario */
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
 
     #overlay {
       display: none;
@@ -176,22 +182,20 @@
 
 <div class="campos">
   <div class="campo" onclick="abrirFormulario('Cancha 1')">
-    <h3>Cancha de 7 jugadores</h3>
     <img src="img/campo1.png" alt="Campo 1">
+    <h3>Cancha de 7 jugadores</h3>
   </div>
   <div class="campo" onclick="abrirFormulario('Cancha 2')">
-    <h3>Cancha de 6 jugadores</h3>
     <img src="img/campo1.png" alt="Campo 2">
+    <h3>Cancha de 6 jugadores</h3>
   </div>
-  
   <div class="campo" onclick="abrirFormulario('Cancha 3')">
-    <h3>Cancha de 5 jugadores</h3>
     <img src="img/campo1.png" alt="Campo 3">
-  </div>
-  
-  <div class="campo" onclick="abrirFormulario('Cancha 4')">
     <h3>Cancha de 5 jugadores</h3>
+  </div>
+  <div class="campo" onclick="abrirFormulario('Cancha 4')">
     <img src="img/campo1.png" alt="Campo 4">
+    <h3>Cancha de 5 jugadores</h3>
   </div>
 </div>
 
@@ -200,8 +204,6 @@
 <div id="formulario">
   <h2 id="tituloCampo">Reserva</h2>
   <input type="date" id="data">
-  
-  <!-- SELECT COM HORÁRIOS DE 30 EM 30 MINUTOS -->
   <select id="hora">
     <option value="">Selecciona una hora</option>
     <option value="06:00">06:00</option>
@@ -246,7 +248,6 @@
   <input type="number" id="duracao" placeholder="Duración en horas" oninput="calcularValor()">
   <input type="text" id="cliente" placeholder="Nombre del cliente/equipo">
   
-  <!-- Exibindo valor total -->
   <input type="text" id="valorTotal" placeholder="Valor total" readonly>
   
   <button class="btn-confirmar" onclick="enviarReserva()">Reservar</button>
@@ -254,12 +255,21 @@
 </div>
 
 <script>
-  let campoSelecionado = "";
-  const scriptURL = "https://script.google.com/macros/library/d/1vfAOi9cuptqOfE_WCVns502UxR9CvpFVIV3S_sbz_QZkKw_Yd1vIhPvB/5";
-  const precoPorHora = 200;
+  let campoSeleccionado = "";
+  let precioPorHora = 0;
 
   function abrirFormulario(campo) {
-    campoSelecionado = campo;
+    campoSeleccionado = campo;
+
+    // Definiendo el precio por hora para cada campo
+    if (campo === "Cancha 1") {
+      precioPorHora = 200;
+    } else if (campo === "Cancha 2") {
+      precioPorHora = 170;
+    } else {
+      precioPorHora = 150;  // Cancha 3 y 4
+    }
+
     document.getElementById('tituloCampo').innerText = `Reserva para ${campo}`;
     document.getElementById('formulario').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
@@ -271,63 +281,37 @@
   }
 
   function calcularValor() {
-    const duracao = document.getElementById('duracao').value;
-    if (duracao) {
-      const valor = duracao * precoPorHora;
-      document.getElementById('valorTotal').value = valor;
+    const duracion = document.getElementById('duracao').value;  // Duración en horas
+    if (duracion) {
+      const valorTotal = duracion * precioPorHora;  // Multiplica la duración por el precio por hora
+      document.getElementById('valorTotal').value = valorTotal;  // Muestra el valor total automáticamente
     } else {
-      document.getElementById('valorTotal').value = "";
+      document.getElementById('valorTotal').value = "";  // Si no hay duración, el campo queda vacío
     }
   }
 
   function enviarReserva() {
     const data = document.getElementById('data').value;
     const hora = document.getElementById('hora').value;
-    const duracao = document.getElementById('duracao').value;
+    const duracion = document.getElementById('duracao').value;
     const cliente = document.getElementById('cliente').value;
     const valor = document.getElementById('valorTotal').value;
 
-    if (!data || !hora || !duracao || !cliente || !valor) {
+    if (!data || !hora || !duracion || !cliente || !valor) {
       alert('¡Rellena todos los campos!');
       return;
     }
 
-    const formData = new URLSearchParams();
-    formData.append('campo', campoSelecionado);
-    formData.append('data', data);
-    formData.append('hora', hora);
-    formData.append('duracao', duracao);
-    formData.append('cliente', cliente);
-    formData.append('valor', valor);
-    fetch(scriptURL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    campo: campoSelecionado,
-    data: data,
-    hora: hora,
-    duracao: duracao,
-    cliente: cliente,
-    valor: valor
-  })
-})
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Error en la reserva');
-      }
-      return response.json();
-    })
-    .then(() => {
-      alert('¡Reserva realizada con éxito!');
-      fecharFormulario();
-    })
-    .catch((error) => {
-      alert('Hubo un error al realizar la reserva. Intenta nuevamente.');
-      console.error(error);
-    });
+    const numeroWhatsApp = "59167728519";  // Número para enviar la reserva vía WhatsApp
+    const mensaje = `Reserva de Cancha: ${campoSeleccionado}\nFecha: ${data}\nHora: ${hora}\nDuración: ${duracion} horas\nCliente: ${cliente}\nValor Total: ${valor}`;
+
+    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+
+    fecharFormulario();  // Cierra el formulario después de enviar la reserva
   }
 </script>
+  
 </body>
 </html>
+<!-- Fin del código HTML -->
