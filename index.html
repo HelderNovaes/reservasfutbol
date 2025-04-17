@@ -243,9 +243,12 @@
     <option value="00:00">00:00</option>
   </select>
 
-  <input type="text" id="duracao" placeholder="Duración (ex: 1.5 para 1 hora y media)">
-  <p id="valorReserva"></p> <!-- Exibe o valor da reserva -->
+  <input type="number" id="duracao" placeholder="Duración en horas" oninput="calcularValor()">
   <input type="text" id="cliente" placeholder="Nombre del cliente/equipo">
+  
+  <!-- Exibindo valor total -->
+  <input type="text" id="valorTotal" placeholder="Valor total" readonly>
+  
   <button class="btn-confirmar" onclick="enviarReserva()">Reservar</button>
   <button class="btn-cancelar" onclick="fecharFormulario()">Cancelar</button>
 </div>
@@ -253,92 +256,64 @@
 <script>
   let campoSelecionado = "";
   const scriptURL = "https://script.google.com/macros/s/AKfycbwHVAwIoMMp57Drrxn2TI02UAGn8vnPRvc_zIbSjC3lli6OStRZ5VBlvQf8kP_kAjvs/exec";
-
-  // Preços por campo
-  const valoresPorCampo = {
-    "Cancha 1": 200, // 7 jugadores
-    "Cancha 2": 170, // 6 jugadores
-    "Cancha 3": 150, // 5 jugadores
-    "Cancha 4": 150  // 5 jugadores
-  };
-
-  // Função para carregar as reservas
-  function carregarReservas() {
-    fetch('https://script.google.com/macros/s/AKfycbwHVAwIoMMp57Drrxn2TI02UAGn8vnPRvc_zIbSjC3lli6OStRZ5VBlvQf8kP_kAjvs/exec')
-      .then(response => response.json())
-      .then(data => {
-        // Processar as reservas
-        const reservas = data;
-        const horariosDisponiveis = document.getElementById('hora').getElementsByTagName('option');
-        
-        for (let i = 0; i < horariosDisponiveis.length; i++) {
-          let option = horariosDisponiveis[i];
-          // Verifique se a data e hora estão reservadas
-          const dataReserva = document.getElementById('data').value;
-          const horaReserva = option.value;
-
-          // Filtrando reservas que correspondem à data e hora
-          const reservasFiltradas = reservas.filter(reserva => 
-            reserva.data === dataReserva && reserva.hora === horaReserva
-          );
-
-          if (reservasFiltradas.length > 0) {
-            option.disabled = true;
-          } else {
-            option.disabled = false;
-          }
-        }
-      })
-      .catch(error => console.error('Erro ao carregar as reservas:', error));
-  }
+  const precoPorHora = 200; // Definindo 200 por hora
 
   function abrirFormulario(campo) {
     campoSelecionado = campo;
-    document.getElementById("tituloCampo").textContent = campo;
-    document.getElementById("valorReserva").textContent = "Precio: Bs " + valoresPorCampo[campo] + " por hora";
-    document.getElementById("overlay").style.display = "block";
-    document.getElementById("formulario").style.display = "block";
-    carregarReservas();
+    document.getElementById('tituloCampo').innerText = `Reserva para ${campo}`;
+    document.getElementById('formulario').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
   }
 
   function fecharFormulario() {
-    document.getElementById("overlay").style.display = "none";
-    document.getElementById("formulario").style.display = "none";
+    document.getElementById('formulario').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+
+  function calcularValor() {
+    const duracao = document.getElementById('duracao').value;
+    if (duracao) {
+      const valor = duracao * precoPorHora;
+      document.getElementById('valorTotal').value = valor;
+    } else {
+      document.getElementById('valorTotal').value = "";
+    }
   }
 
   function enviarReserva() {
-    const data = document.getElementById('Fecha').value;
+    const data = document.getElementById('data').value;
     const hora = document.getElementById('hora').value;
-    const duracao = document.getElementById('duracion').value;
+    const duracao = document.getElementById('duracao').value;
     const cliente = document.getElementById('cliente').value;
-    const valor = valoresPorCampo[campoSelecionado];
+    const valor = document.getElementById('valorTotal').value;
 
-    // Verifique se os campos necessários estão preenchidos
-    if (!fecha || !hora || !duracion || !cliente) {
-      alert("Por favor, complete todos los campos.");
+    if (!data || !hora || !duracao || !cliente || !valor) {
+      alert('¡Rellena todos los campos!');
       return;
     }
 
-    // Enviar a reserva
     fetch(scriptURL, {
-      method: "POST",
-      body: new URLSearchParams({
+      method: 'POST',
+      body: JSON.stringify({
         campo: campoSelecionado,
         data: data,
         hora: hora,
         duracao: duracao,
         cliente: cliente,
         valor: valor
-      })
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     })
-      .then(response => {
-        alert("Reserva confirmada!");
-        fecharFormulario();
-      })
-      .catch(error => {
-        alert("Erro ao fazer a reserva.");
-        console.error('Erro ao enviar reserva:', error);
-      });
+    .then(response => {
+      alert('¡Reserva enviada con éxito!');
+      fecharFormulario();
+    })
+    .catch(error => {
+      alert('Error al enviar la reserva. Intenta nuevamente.');
+      console.error(error);
+    });
   }
 </script>
 
