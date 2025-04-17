@@ -254,68 +254,80 @@
 </div>
 
 <script>
-    let campoSelecionado = "";
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwEQGgLsUFOjej0NM7VwyYMA3GlC9_3JM-wRkxyqsQMIuDc7grMVXYXa25preQDBW-R/exec";
+  let campoSelecionado = "";
+  const scriptURL = "https://script.google.com/macros/library/d/1vfAOi9cuptqOfE_WCVns502UxR9CvpFVIV3S_sbz_QZkKw_Yd1vIhPvB/5";
+  const precoPorHora = 200;
 
-    const precoPorHora = 200;
-  
-    function abrirFormulario(campo) {
-      campoSelecionado = campo;
-      document.getElementById('tituloCampo').innerText = `Reserva para ${campo}`;
-      document.getElementById('formulario').style.display = 'block';
-      document.getElementById('overlay').style.display = 'block';
+  function abrirFormulario(campo) {
+    campoSelecionado = campo;
+    document.getElementById('tituloCampo').innerText = `Reserva para ${campo}`;
+    document.getElementById('formulario').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+  }
+
+  function fecharFormulario() {
+    document.getElementById('formulario').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+
+  function calcularValor() {
+    const duracao = document.getElementById('duracao').value;
+    if (duracao) {
+      const valor = duracao * precoPorHora;
+      document.getElementById('valorTotal').value = valor;
+    } else {
+      document.getElementById('valorTotal').value = "";
     }
-  
-    function fecharFormulario() {
-      document.getElementById('formulario').style.display = 'none';
-      document.getElementById('overlay').style.display = 'none';
+  }
+
+  function enviarReserva() {
+    const data = document.getElementById('data').value;
+    const hora = document.getElementById('hora').value;
+    const duracao = document.getElementById('duracao').value;
+    const cliente = document.getElementById('cliente').value;
+    const valor = document.getElementById('valorTotal').value;
+
+    if (!data || !hora || !duracao || !cliente || !valor) {
+      alert('¡Rellena todos los campos!');
+      return;
     }
-  
-    function calcularValor() {
-      const duracao = document.getElementById('duracao').value;
-      if (duracao) {
-        const valor = duracao * precoPorHora;
-        document.getElementById('valorTotal').value = valor;
-      } else {
-        document.getElementById('valorTotal').value = "";
+
+    const formData = new URLSearchParams();
+    formData.append('campo', campoSelecionado);
+    formData.append('data', data);
+    formData.append('hora', hora);
+    formData.append('duracao', duracao);
+    formData.append('cliente', cliente);
+    formData.append('valor', valor);
+    fetch(scriptURL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    campo: campoSelecionado,
+    data: data,
+    hora: hora,
+    duracao: duracao,
+    cliente: cliente,
+    valor: valor
+  })
+})
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Error en la reserva');
       }
-    }
-  
-    function enviarReserva() {
-      const data = document.getElementById('data').value;
-      const hora = document.getElementById('hora').value;
-      const duracao = document.getElementById('duracao').value;
-      const cliente = document.getElementById('cliente').value;
-      const valor = document.getElementById('valorTotal').value;
-  
-      if (!data || !hora || !duracao || !cliente || !valor) {
-        alert('¡Rellena todos los campos!');
-        return;
-      }
-  
-      fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors', // para evitar erro de CORS
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          campo: campoSelecionado,
-          data: data,
-          hora: hora,
-          duracao: duracao,
-          cliente: cliente,
-          valor: valor
-        })
-      })
-      .then(() => {
-        alert('¡Reserva realizada con éxito!');
-        fecharFormulario();
-      })
-      .catch((error) => {
-        alert('Hubo un error al realizar la reserva. Intenta nuevamente.');
-        console.error(error);
-      });
-    }
-  </script>
-  
+      return response.json();
+    })
+    .then(() => {
+      alert('¡Reserva realizada con éxito!');
+      fecharFormulario();
+    })
+    .catch((error) => {
+      alert('Hubo un error al realizar la reserva. Intenta nuevamente.');
+      console.error(error);
+    });
+  }
+</script>
+</body>
+</html>
