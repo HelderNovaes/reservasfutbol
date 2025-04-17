@@ -307,14 +307,14 @@
   }
 
   function enviarReserva() {
-    const data = document.getElementById('data').value;
+    const data = document.getElementById('Fecha').value;
     const hora = document.getElementById('hora').value;
-    const duracao = document.getElementById('duracao').value;
+    const duracao = document.getElementById('duracion').value;
     const cliente = document.getElementById('cliente').value;
     const valor = valoresPorCampo[campoSelecionado];
 
     // Verifique se os campos necessários estão preenchidos
-    if (!data || !hora || !duracao || !cliente) {
+    if (!fecha || !hora || !duracion || !cliente) {
       alert("Por favor, complete todos los campos.");
       return;
     }
