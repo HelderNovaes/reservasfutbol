@@ -257,86 +257,61 @@
 <script>
   let campoSeleccionado = "";
   let precioPorHora = 0;
-  
-  // URL del script de Google Apps donde se almacenarán las reservas
-  const sheetUrl = 'https://script.google.com/macros/s/AKfycbymclV8lL1_RqIT8B9UIzVpWIvXQyU7z09dNkTA-xxNj9-hGPHlEds44sqAY6jCziuVmw/exec';  // Asegúrate de que esta URL sea la correcta
-  
-  // Al abrir el formulario, define la cancha seleccionada y el precio por hora
+
   function abrirFormulario(campo) {
     campoSeleccionado = campo;
-  
-    // Establecer el precio por hora para cada cancha
+
+    // Definiendo el precio por hora para cada campo
     if (campo === "Cancha 1") {
       precioPorHora = 200;
     } else if (campo === "Cancha 2") {
       precioPorHora = 170;
     } else {
-      precioPorHora = 150;  // Para Cancha 3 y 4
+      precioPorHora = 150;  // Cancha 3 y 4
     }
-  
+
     document.getElementById('tituloCampo').innerText = `Reserva para ${campo}`;
     document.getElementById('formulario').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
   }
-  
-  // Cierra el formulario
+
   function fecharFormulario() {
     document.getElementById('formulario').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
   }
-  
-  // Calcula el valor total de la reserva
+
   function calcularValor() {
     const duracion = document.getElementById('duracao').value;  // Duración en horas
     if (duracion) {
-      const valorTotal = duracion * precioPorHora;  // Multiplica duración por precio por hora
-      document.getElementById('valorTotal').value = valorTotal;  // Muestra el valor total
+      const valorTotal = duracion * precioPorHora;  // Multiplica la duración por el precio por hora
+      document.getElementById('valorTotal').value = valorTotal;  // Muestra el valor total automáticamente
     } else {
-      document.getElementById('valorTotal').value = "";  // Si no hay duración, deja el campo vacío
+      document.getElementById('valorTotal').value = "";  // Si no hay duración, el campo queda vacío
     }
   }
-  
-  // Función para enviar la reserva a Google Sheets
-  async function enviarReserva() {
+
+  function enviarReserva() {
     const data = document.getElementById('data').value;
     const hora = document.getElementById('hora').value;
     const duracion = document.getElementById('duracao').value;
     const cliente = document.getElementById('cliente').value;
     const valor = document.getElementById('valorTotal').value;
-  
+
     if (!data || !hora || !duracion || !cliente || !valor) {
-      alert('¡Por favor, rellena todos los campos!');
+      alert('¡Rellena todos los campos!');
       return;
     }
-  
-    const reserva = {
-      campo: campoSeleccionado,
-      fecha: data,
-      hora: hora,
-      duracion: duracion,
-      cliente: cliente,
-      valor: valor
-    };
-  
-    try {
-      const response = await fetch(sheetUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reserva),
-      });
-  
-      const result = await response.text();
-      alert(result);  // Mostramos la respuesta del servidor
-    } catch (error) {
-      alert('Error al guardar la reserva: ' + error.message);
-    }
-  
-    // Cerrar el formulario después de enviar la reserva
-    fecharFormulario();
+
+    const numeroWhatsApp = "59167728519";  // Número para enviar la reserva vía WhatsApp
+    const mensaje = `Reserva de Cancha: ${campoSeleccionado}\nFecha: ${data}\nHora: ${hora}\nDuración: ${duracion} horas\nCliente: ${cliente}\nValor Total: ${valor}`;
+
+    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+    
+    fecharFormulario();  // Cierra el formulario después de enviar la reserva
   }
-  </script>  
+</script>
+  
 </body>
 </html>
 <!-- Fin del código HTML -->
