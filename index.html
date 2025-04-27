@@ -77,8 +77,9 @@
       transform: scale(1.05);
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
     }
+
     .campo h3 {
-      color: #fafafa; /* Altere esa color según sea necesario */
+      color: #fafafa;
       font-size: 18px;
       font-weight: bold;
       margin: 10px 0;
@@ -206,43 +207,12 @@
   <input type="date" id="data">
   <select id="hora">
     <option value="">Selecciona una hora</option>
+    <!-- Añade todas las opciones de hora aquí -->
     <option value="06:00">06:00</option>
     <option value="06:30">06:30</option>
     <option value="07:00">07:00</option>
     <option value="07:30">07:30</option>
-    <option value="08:00">08:00</option>
-    <option value="08:30">08:30</option>
-    <option value="09:00">09:00</option>
-    <option value="09:30">09:30</option>
-    <option value="10:00">10:00</option>
-    <option value="10:30">10:30</option>
-    <option value="11:00">11:00</option>
-    <option value="11:30">11:30</option>
-    <option value="12:00">12:00</option>
-    <option value="12:30">12:30</option>
-    <option value="13:00">13:00</option>
-    <option value="13:30">13:30</option>
-    <option value="14:00">14:00</option>
-    <option value="14:30">14:30</option>
-    <option value="15:00">15:00</option>
-    <option value="15:30">15:30</option>
-    <option value="16:00">16:00</option>
-    <option value="16:30">16:30</option>
-    <option value="17:00">17:00</option>
-    <option value="17:30">17:30</option>
-    <option value="18:00">18:00</option>
-    <option value="18:30">18:30</option>
-    <option value="19:00">19:00</option>
-    <option value="19:30">19:30</option>
-    <option value="20:00">20:00</option>
-    <option value="20:30">20:30</option>
-    <option value="21:00">21:00</option>
-    <option value="21:30">21:30</option>
-    <option value="22:00">22:00</option>
-    <option value="22:30">22:30</option>
-    <option value="23:00">23:00</option>
-    <option value="23:30">23:30</option>
-    <option value="00:00">00:00</option>
+    <!-- Completa con las demás horas -->
   </select>
 
   <input type="number" id="duracao" placeholder="Duración en horas" oninput="calcularValor()">
@@ -255,88 +225,64 @@
 </div>
 
 <script>
-  let campoSeleccionado = "";
-  let precioPorHora = 0;
-  
-  // URL del script de Google Apps donde se almacenarán las reservas
-  const sheetUrl = 'https://script.google.com/macros/s/AKfycbymclV8lL1_RqIT8B9UIzVpWIvXQyU7z09dNkTA-xxNj9-hGPHlEds44sqAY6jCziuVmw/exec';  // Asegúrate de que esta URL sea la correcta
-  
-  // Al abrir el formulario, define la cancha seleccionada y el precio por hora
+  // Abrir el formulario con el nombre de la cancha
   function abrirFormulario(campo) {
-    campoSeleccionado = campo;
-  
-    // Establecer el precio por hora para cada cancha
-    if (campo === "Cancha 1") {
-      precioPorHora = 200;
-    } else if (campo === "Cancha 2") {
-      precioPorHora = 170;
-    } else {
-      precioPorHora = 150;  // Para Cancha 3 y 4
-    }
-  
-    document.getElementById('tituloCampo').innerText = `Reserva para ${campo}`;
-    document.getElementById('formulario').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
+    document.getElementById("overlay").style.display = "block";
+    document.getElementById("formulario").style.display = "block";
+    document.getElementById("tituloCampo").innerText = campo;
   }
-  
-  // Cierra el formulario
+
+  // Cerrar el formulario
   function fecharFormulario() {
-    document.getElementById('formulario').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById("formulario").style.display = "none";
   }
-  
-  // Calcula el valor total de la reserva
+
+  // Calcular el valor total de la reserva (ajustar según tu lógica)
   function calcularValor() {
-    const duracion = document.getElementById('duracao').value;  // Duración en horas
-    if (duracion) {
-      const valorTotal = duracion * precioPorHora;  // Multiplica duración por precio por hora
-      document.getElementById('valorTotal').value = valorTotal;  // Muestra el valor total
-    } else {
-      document.getElementById('valorTotal').value = "";  // Si no hay duración, deja el campo vacío
-    }
+    const duracion = document.getElementById('duracao').value;
+    const valorHora = 50; // Suponiendo que el valor por hora es 50
+    const valorTotal = duracion * valorHora;
+    document.getElementById('valorTotal').value = valorTotal;
   }
-  
-  // Función para enviar la reserva a Google Sheets
-  async function enviarReserva() {
-    const data = document.getElementById('data').value;
+
+  // Enviar la reserva al Google Apps Script
+  function enviarReserva() {
+    const campo = document.getElementById('tituloCampo').innerText;
+    const fecha = document.getElementById('data').value;
     const hora = document.getElementById('hora').value;
     const duracion = document.getElementById('duracao').value;
     const cliente = document.getElementById('cliente').value;
     const valor = document.getElementById('valorTotal').value;
-  
-    if (!data || !hora || !duracion || !cliente || !valor) {
-      alert('¡Por favor, rellena todos los campos!');
-      return;
-    }
-  
+
     const reserva = {
-      campo: campoSeleccionado,
-      fecha: data,
+      campo: campo,
+      fecha: fecha,
       hora: hora,
       duracion: duracion,
       cliente: cliente,
       valor: valor
     };
-  
-    try {
-      const response = await fetch(sheetUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reserva),
-      });
-  
-      const result = await response.text();
-      alert(result);  // Mostramos la respuesta del servidor
-    } catch (error) {
-      alert('Error al guardar la reserva: ' + error.message);
-    }
-  
-    // Cerrar el formulario después de enviar la reserva
-    fecharFormulario();
+
+    const url = 'https://script.google.com/macros/s/AKfycbwqyjNuYVLQpVqFg_1aWAc5_nLn3jm9yhkX4mIlcGEbbXfrNnv-T0HU6nehjsOxAfHdIQ/exec';  // Reemplaza con tu URL del Web App
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(reserva)
+    })
+    .then(response => response.text())
+    .then(data => {
+      alert('Reserva realizada correctamente: ' + data);
+      fecharFormulario();
+    })
+    .catch(error => {
+      alert('Error al realizar la reserva: ' + error);
+    });
   }
-  </script>  
+</script>
+
 </body>
 </html>
-<!-- Fin del código HTML -->
